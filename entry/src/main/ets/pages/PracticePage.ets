@@ -5,9 +5,8 @@ import { AnswerStatus } from './enums/AnswerStatus'
 import { getRandomQuestions, Question } from './model/Question'
 import { OptionStatus } from './enums/OptionStatus'
 
-@Entry
 @Component
-struct PracticePage {
+export struct PracticePage {
   @State practicesStatus: PracticesStatus = PracticesStatus.Stopped
   @State totalCount: number = 10
   @State questions: Question[] = getRandomQuestions(this.totalCount)
