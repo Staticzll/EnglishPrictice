@@ -1,4 +1,8 @@
 import router from '@ohos.router'
+
+PersistentStorage.PersistProp('token', '')
+AppStorage.SetOrCreate('currentTabIndex',0)
+
 @Entry
 @Component
 struct SplashPage {
@@ -6,11 +10,11 @@ struct SplashPage {
   @State flag: boolean = false
 
   onPageShow() {
-    animateTo({duration:1000,onFinish:()=>{
-      setTimeout(()=>{
-        router.replace({url:'pages/Index'})
-      },200)
-    }},()=>{
+    animateTo({ duration: 1000, onFinish: () => {
+      setTimeout(() => {
+        router.replace({ url: 'pages/Index' })
+      }, 200)
+    } }, () => {
       this.flag = true
     })
   }

@@ -1,26 +1,29 @@
+import { CirclePage } from './CirclePage'
+import { MinePage } from './MinePage'
 import { PracticePage } from './PracticePage'
+
 @Entry
 @Component
 struct Index {
   @State message: string = 'Hello World'
-  @State currentTabIndex: number = 0
+  @StorageLink('currentTabIndex') currentTabIndex: number = 0
 
   build() {
-    Tabs() {
+    Tabs({ index: this.currentTabIndex }) {
       TabContent() {
         PracticePage()
       }
-      .tabBar(this.barBuilder(0,'答题',$r('app.media.ic_practice_selected'),$r('app.media.ic_practice')))
+      .tabBar(this.barBuilder(0, '答题', $r('app.media.ic_practice_selected'), $r('app.media.ic_practice')))
 
       TabContent() {
-        Text('圈子')
+        CirclePage()
       }
-      .tabBar(this.barBuilder(1,'圈子',$r('app.media.ic_circle_selected'),$r('app.media.ic_circle')))
+      .tabBar(this.barBuilder(1, '圈子', $r('app.media.ic_circle_selected'), $r('app.media.ic_circle')))
 
       TabContent() {
-        Text('我的')
+        MinePage()
       }
-      .tabBar(this.barBuilder(2,'我的',$r('app.media.ic_mine_selected'),$r('app.media.ic_mine')))
+      .tabBar(this.barBuilder(2, '我的', $r('app.media.ic_mine_selected'), $r('app.media.ic_mine')))
     }.barPosition(BarPosition.End)
     .onChange((index) => {
       this.currentTabIndex = index

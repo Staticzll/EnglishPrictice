@@ -4,6 +4,9 @@ import { PracticesStatus } from './enums/PracticesStatus'
 import { AnswerStatus } from './enums/AnswerStatus'
 import { getRandomQuestions, Question } from './model/Question'
 import { OptionStatus } from './enums/OptionStatus'
+import router from '@ohos.router'
+import { createPost } from './http/Api'
+import emitter from '@ohos.events.emitter'
 
 @Component
 export struct PracticePage {
@@ -36,7 +39,7 @@ export struct PracticePage {
       startPractice: () => {
         this.startPractice()
       }
-    }), customStyle: true,autoCancel:false })
+    }), customStyle: true, autoCancel: false })
 
   startPractice() {
     this.practicesStatus = PracticesStatus.Running
@@ -44,7 +47,8 @@ export struct PracticePage {
     this.timeController.start()
   }
 
-  test(){}
+  test() {
+  }
 
   pausePractice() {
     // dddd
@@ -65,7 +69,7 @@ export struct PracticePage {
     Column() {
       Column({ space: 10 }) {
         // 准确率
-        statItem({ icon: $r('app.media.ic_accuracy'),
+        StatItem({ icon: $r('app.media.ic_accuracy'),
           name: '准确率',
           fontColor: Color.Black
         }) {
@@ -74,7 +78,7 @@ export struct PracticePage {
             .textAlign(TextAlign.Center)
         }
         // 进度
-        statItem({ icon: $r('app.media.ic_progress'),
+        StatItem({ icon: $r('app.media.ic_progress'),
           name: '进度',
           fontColor: Color.Black
         }) {
@@ -82,7 +86,7 @@ export struct PracticePage {
             .width(100)
         }
         // 个数
-        statItem({ icon: $r('app.media.ic_count'),
+        StatItem({ icon: $r('app.media.ic_count'),
           name: '个数',
           fontColor: Color.Black
         }) {
@@ -105,7 +109,7 @@ export struct PracticePage {
             })
         }
         // 用时
-        statItem({ icon: $r('app.media.ic_timer'),
+        StatItem({ icon: $r('app.media.ic_timer'),
           name: '用时',
           fontColor: Color.Black
         }) {
@@ -203,6 +207,8 @@ struct ResultDialog {
   answeredCount: number
   resetPractice: () => void
   startPractice: () => void
+  @StorageProp('token') token: string = ''
+  @StorageLink('currentTabIndex') currentTabIndex: number = 0
 
   build() {
     Column({ space: 10 }) {
@@ -218,21 +224,21 @@ struct ResultDialog {
         Image($r('app.media.img_post'))
           .width('100%')
           .borderRadius(10)
-        statItem({
+        StatItem({
           icon: $r('app.media.ic_timer'),
           name: '用时'
         }) {
           Text(`${this.timeUsed}秒`)
         }
 
-        statItem({
+        StatItem({
           icon: $r('app.media.ic_accuracy'),
           name: '准确率'
         }) {
           Text((this.answeredCount === 0 ? 0 : this.rightCount / this.answeredCount * 100).toFixed() + '%')
         }
 
-        statItem({
+        StatItem({
           icon: $r('app.media.ic_count'),
           name: '个数'
         }) {
@@ -252,16 +258,37 @@ struct ResultDialog {
               this.resetPractice()
               this.startPractice()
             })
-          Button('登录打卡')
+          Button(this.token ? '立即打卡' : '登录打卡')
             .controlButtonStyle({
               bg: Color.Black,
               border: Color.Black,
               font: Color.White
             })
-            .onClick(() => {
+            .onClick(async () => {
               this.controller.close()
               this.resetPractice()
-              // 登录并打卡
+              if (this.token) {
+                // 发送打卡请求
+                await  createPost({
+                  rightCount: this.rightCount,
+                  answeredCount: this.answeredCount,
+                  timeUsed: this.timeUsed
+                })
+                // 跳转到打卡圈
+                promptAction.showToast({ message: '打卡成功' })
+                // 通知
+                emitter.emit({eventId:1})
+                this.currentTabIndex = 1
+              } else {
+                // 跳转到登录页面
+                router.push({ url: 'pages/LoginPage', params: {
+                  rightCount: this.rightCount,
+                  answeredCount: this.answeredCount,
+                  timeUsed: this.timeUsed
+                } })
+                // 发送打卡请求
+                // 跳转到打卡圈
+              }
             })
         }
       }
@@ -276,7 +303,7 @@ struct ResultDialog {
 }
 
 @Component
-struct statItem {
+export struct StatItem {
   icon: Resource
   name: string
   @BuilderParam statComp: () => void
